@@ -1,0 +1,210 @@
+I took away the black background for the main code of the questions, just so it’s easier to read
+#1
+import pymysql
+import pandas as pd
+from sqlalchemy import create_engine
+connection = pymysql.connect(host='127.0.0.1',
+       user='root',
+       password='HW2',
+       db='hw2',
+       cursorclass=pymysql.cursors.DictCursor)
+print(connection)
+sql = "create table if not exists example (name varchar(255));"
+cursor = connection.cursor()
+cursor.execute(sql)
+connection.commit()
+sql2 = "show tables;"
+cursor.execute(sql2)
+result = cursor.fetchone()
+print(result)
+host="127.0.0.1"
+db="hw2"	
+user="root"
+password="HW2"
+#cursor.execute("CREATE TABLE NYCDATA2 (jobnum  VARCHAR(255), docnum  VARCHAR(255) , borough VARCHAR(255) ,housenum  VARCHAR(255)  ,streetname VARCHAR(255)    ,jobtype VARCHAR(255)  ,
+jobstatus  VARCHAR(255) ,jobstatdesc VARCHAR(255)  , latestactiondate  VARCHAR(255), PRIMARY KEY (jobnum)   )")
+col_list = ['Job #','Doc #','Borough','House #','Street Name', 'Job Type', 'Job Status',
+'Job Status Descrp','Latest Action Date']
+data = pd.read_csv('DOB_Job_Application_Filings.csv', usecols=col_list, nrows=100)
+data.at[11, 'Latest Action Date']='2018-10-05'
+engine = create_engine("mysql+pymysql://{user}:{pw}@{host}/{db}"
+                               .format(host=host, db=db, user=user, pw=password))
+data.to_sql('NYCDATA2', engine, index=False, if_exists = 'replace')
+connection.close()
+~                                                                                                                                                                                      
+~                                                                                                                                                                                      
+~                                                                                                                                                                                      
+~                                                                                                                                                                                      
+~                                                                                                                                                                                      
+~         
+
+
+
+
+
+   
+
+MySQL [hw2]> SELECT * FROM NYCDATA2 limit 5;
++-----------+-------+-----------+---------+------------------+----------+------------+--------------------------------+--------------------+
+| Job #     | Doc # | Borough   | House # | Street Name      | Job Type | Job Status | Job Status Descrp              | Latest Action Date |
++-----------+-------+-----------+---------+------------------+----------+------------+--------------------------------+--------------------+
+| 110083524 |     2 | MANHATTAN | 152     | WEST   57 STREET | A2       | X          | SIGNED OFF                     | 2009-04-08         |
+| 110083533 |     1 | MANHATTAN | 444     | EAST   52 STREET | A2       | X          | SIGNED OFF                     | 2009-06-04         |
+| 110083542 |     1 | MANHATTAN | 2       | WARDS ISLAND     | A1       | J          | PLAN EXAM - DISAPPROVED        | 2008-02-14         |
+| 110083542 |     2 | MANHATTAN | 2       | WARDS ISLAND     | A1       | J          | PLAN EXAM - DISAPPROVED        | 2008-02-14         |
+| 110083542 |     3 | MANHATTAN | 2       | WARDS ISLAND     | A1       | D          | APPLICATION PROCESSED - ENTIRE | 2008-02-15         |
++-----------+-------+-----------+---------+------------------+----------+------------+--------------------------------+--------------------+
+5 rows in set (0.003 sec)
+                                              
+
+NOTE: This took a lot of time, effort, and headache. I don’t believe without the extension I would’ve been able to complete I ended up having to restart the entire process a few times but it worked. Also, Mohammed was a HUGE help in debugging and understanding how to use the system. Not implying this is his work or anything at all just trying to give notice to a fellow peer who went beyond what anyone could ask not only to help me, but also other classmates. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#2
+import pymysql
+import pandas as pd
+from sqlalchemy import create_engine
+connection = pymysql.connect(host='127.0.0.1',
+      user='root',
+      password='HW2',
+      db='hw2',
+      cursorclass=pymysql.cursors.DictCursor)
+print(connection)
+sql = "create table if not exists example (name varchar(255));"
+cursor = connection.cursor()
+cursor.execute(sql)
+connection.commit()
+sql2 = "show tables;"
+cursor.execute(sql2)
+result = cursor.fetchone()
+print(result)
+host="127.0.0.1"
+db="hw2"
+user="root"
+password="HW2"
+cursor.execute("CREATE TABLE NYCDATA_2 (jobnum  VARCHAR(255), docnum  VARCHAR(255) , borough VARCHAR(255) ,housenum  VARCHAR(255)  ,streetname VARCHAR(255) ,jobtype VARCHAR(255), jobst
+atus  VARCHAR(255) ,jobstatdesc VARCHAR(255)  , latestactiondate  VARCHAR(255), PRIMARY KEY (jobnum)   )")
+col_list1 = ['job__','doc__','borough','house__','street_name', 'job_type', 'job_status','job_status_descrp','latest_action_date']
+data1 = pd.read_csv("https://data.cityofnewyork.us/resource/ic3t-wcy2.csv", usecols=col_list1,   nrows=100 )
+data1.at[11, 'latest_action_date']='2018-10-05'
+engine = create_engine("mysql+pymysql://{user}:{pw}@{host}/{db}"
+                              .format(host=host, db=db, user=user, pw=password))
+data1.to_sql('NYCDATA_2', engine, index=False, if_exists = 'replace')
+connection.close()
+
+
+
+
+
+
+MySQL [hw2]> select * from NYCDATA_2 limit 5;
++-----------+-------+-----------+---------+------------------+----------+------------+--------------------------------+--------------------+
+| job__     | doc__ | borough   | house__ | street_name      | job_type | job_status | job_status_descrp              | latest_action_date |
++-----------+-------+-----------+---------+------------------+----------+------------+--------------------------------+--------------------+
+| 110083524 |     2 | MANHATTAN | 152     | WEST   57 STREET | A2       | X          | SIGNED OFF                     | 2009-04-08         |
+| 110083533 |     1 | MANHATTAN | 444     | EAST   52 STREET | A2       | X          | SIGNED OFF                     | 2009-06-04         |
+| 110083542 |     1 | MANHATTAN | 2       | WARDS ISLAND     | A1       | J          | PLAN EXAM - DISAPPROVED        | 2008-02-14         |
+| 110083542 |     2 | MANHATTAN | 2       | WARDS ISLAND     | A1       | J          | PLAN EXAM - DISAPPROVED        | 2008-02-14         |
+| 110083542 |     3 | MANHATTAN | 2       | WARDS ISLAND     | A1       | D          | APPLICATION PROCESSED - ENTIRE | 2008-02-15         |
+import pymysql
++-----------+-------+-----------+---------+------------------+----------+------------+--------------------------------+--------------------+
+
+
+
+
+
+
+#3
+
+
+import pymysql
+import pandas as pd
+from sqlalchemy import create_engine
+connection = pymysql.connect(host='127.0.0.1',
+     user='root',
+     password='HW2',
+     db='hw2',
+     cursorclass=pymysql.cursors.DictCursor)
+print(connection)
+sql = "create table if not exists example (name varchar(255));"
+cursor = connection.cursor()
+cursor.execute(sql)
+connection.commit()
+sql2 = "show tables;"
+cursor.execute(sql2)
+result = cursor.fetchone()
+print(result)
+host="127.0.0.1"
+db="hw2"
+user="root"
+password="HW2"
+#cursor.execute("CREATE TABLE NYCDATA_3 (jobnum  VARCHAR(255), docnum  VARCHAR(255) , borough VARCHAR(255) , housenum  VARCHAR(255)  , streetname VARCHAR(255) , jobtype VARCHAR(255), j
+obstaatus  VARCHAR(255) ,jobstatdesc VARCHAR(255)  , latestactiondate  VARCHAR(255), landmarked VARCHAR(255), adult_estab VARCHAR(255), initial_cost float(30), existing_occupancy VARCH
+AR(255), proposed_occupancy VARCHAR(255), owner_type VARCHAR(255), job_description VARCHAR(255) ,  PRIMARY KEY (jobnum)   )")
+col_list3 = ['job__','doc__','borough','house__','street_name', 'job_type', 'job_status','job_status_descrp','landmarked', 'adult_estab', 'latest_action_date', 'existing_occupancy', 'p
+roposed_occupancy', 'owner_type', 'job_description', 'initial_cost']
+data2 = pd.read_csv("https://data.cityofnewyork.us/resource/ic3t-wcy2.csv", usecols=col_list3 )
+data2.at[11, 'latest_action_date']='2018-10-05'
+data2 = data2[data2['adult_estab'].notna()]
+data2 = data2[data2['landmarked'].notna()]
+data2 = data2[data2['job_description'].notna()]
+data2['initial_cost'] = data2['initial_cost'].str.replace('$', '').astype(float)
+data2['initial_cost']= data2['initial_cost'].div(10000)
+engine = create_engine("mysql+pymysql://{user}:{pw}@{host}/{db}"
+                             .format(host=host, db=db, user=user, pw=password))
+data2.to_sql('NYCDATA_3', engine, index=False, if_exists = 'replace')
+connection.close()
+
+
+
+
+
+
+
+
+MySQL [hw2]> select * from NYCDATA_3 limit 5;
++-----------+-------+-----------+---------+------------------+----------+------------+--------------------------------+--------------------+------------+-------------+--------------+--
+------------------+--------------------+-------------+----------------------------------------------------------------------------------------------------------------------------------
+----------------------------+
+| job__     | doc__ | borough   | house__ | street_name      | job_type | job_status | job_status_descrp              | latest_action_date | landmarked | adult_estab | initial_cost | e
+xisting_occupancy | proposed_occupancy | owner_type  | job_description                                                                                                                 
+                           |
++-----------+-------+-----------+---------+------------------+----------+------------+--------------------------------+--------------------+------------+-------------+--------------+--
+------------------+--------------------+-------------+----------------------------------------------------------------------------------------------------------------------------------
+----------------------------+
+| 110083524 |     2 | MANHATTAN | 152     | WEST   57 STREET | A2       | X          | SIGNED OFF                     | 2009-04-08         | N          | N           |           16 | N
+ULL               | NULL               | PARTNERSHIP | Mechanical and Plumbing modifications as indicated on plans filed herewith. No change in use, egress or occupancy.              
+                           |
+| 110083533 |     1 | MANHATTAN | 444     | EAST   52 STREET | A2       | X          | SIGNED OFF                     | 2009-06-04         | N          | N           |           10 | R
+ES                | NULL               | CORPORATION | Apartment renovation work to include partition, ceiling, door and plumbing work as indicated on plans filed herewith. No change i
+n use, egress or occupancy. |
+| 110083542 |     1 | MANHATTAN | 2       | WARDS ISLAND     | A1       | J          | PLAN EXAM - DISAPPROVED        | 2008-02-14         | N          | N           |           40 | J
+-1                | J-1                | OTHER       | Herewith filing alteration type 1 to change use.                                                                                
+                           |
+| 110083542 |     2 | MANHATTAN | 2       | WARDS ISLAND     | A1       | J          | PLAN EXAM - DISAPPROVED        | 2008-02-14         | N          | N           |           30 | N
+ULL               | NULL               | OTHER       | Filing herewith  Plumbing and Mechanical work in conjunction with ALT 1                                                         
+                           |
+| 110083542 |     3 | MANHATTAN | 2       | WARDS ISLAND     | A1       | D          | APPLICATION PROCESSED - ENTIRE | 2008-02-15         | N          | N           |            0 | N
+ULL               | NULL               | CORPORATION | FILING HEREWITH, STRUCTURAL WORK                                                                                                
+                           |
++-----------+-------+-----------+---------+------------------+----------+------------+--------------------------------+--------------------+------------+-------------+--------------+--
+------------------+--------------------+-------------+----------------------------------------------------------------------------------------------------------------------------------
+----------------------------+
+
+
