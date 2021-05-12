@@ -1,0 +1,135 @@
+Daily Attendance(PK: School_DBN)  DOE_Gifted_and_Talented_Admissions_Guide (PK:DBN)
+DOE_High_School_Directory(PK: DBN)
+DOE_Teacher_Responses(PK: DBN, FK: School_Name)
+School_Demographic_Snapshot(PK: DBN and Year)
+
+
+SELECT DBN from hw1.DOE_Teacher_Responses INNER JOIN hw1.DOE_Gifted_and_Talented_Admissions_Guide USING (DBN) where Rigorous_Instruction_Score!= 'N/A' and CAST(Rigorous_Instruction_Score as FLOAT64) < 3.0  ;
+DBN
+05M129
+22K109
+30Q300
+13K282
+04M102
+20K200
+11X121
+01M110
+13K056
+
+
+
+Select  dbn, __Black, __Black/sum(__Black) over() as Total,  from hw1.DOE_High_School_Directory inner join hw1.School_Demographic_Snapshot USING (dbn) where earlycollege > 0 and Year = '2018-19' order by Total desc;
+
+
+
+
+
+
+
+
+
+
+
+
+1
+17K122
+479
+0.13760413674231542
+
+
+2
+22K555
+455
+0.13070956621660443
+
+
+3
+17K543
+445
+0.12783682849755817
+
+
+4
+28Q284
+336
+0.09652398735995403
+
+
+5
+13K674
+270
+0.07756391841424878
+
+
+
+
+
+
+
+select School_DBN, Date, Present/Enrolled as Percent from hw1.Daily_Attendance where Date = 20180927 ORDER BY Percent desc; 
+
+62
+31R605
+20180927
+0.9842460615153789
+
+
+
+
+
+
+
+
+
+
+select language_classes, count(language_classes)as Results  from hw1.DOE_High_School_Directory GROUP BY language_classes ORDER BY Results;
+
+Results: 45 Schools
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELECT DBN, Rigorous_Instruction_Score , Effective_School_Leadership_Score, Strong_Family_Community_Ties_Score,  SAFE_CAST(Rigorous_Instruction_Score as FLOAT64)	+ SAFE_CAST(Effective_School_Leadership_Score	as FLOAT64)+ SAFE_CAST(Strong_Family_Community_Ties_Score as FLOAT64) as Total from hw1.DOE_Gifted_and_Talented_Admissions_Guide INNER JOIN hw1.DOE_Teacher_Responses USING (DBN) ORDER BY Total desc;
+Answer: 
+
+20K748
+4.89
+4.56
+4.23
+13.68
+
+
+
+
+
+
+select __Black, DBN, Year, School_Name, (__Black - lag(__Black) over(partition by DBN order by Year)) as Diff, from hw1.School_Demographic_Snapshot inner join hw1.DOE_High_School_Directory USING (DBN, School_Name) ORDER BY (DBN) ;; 
+********The above query was saved as a view*******
+select DBN, School_Name, avg (Diff) over(partition by DBN) as Results from hw1.Q7 ORDER BY (Results) DESC
+
+Results: 
+
+19K422
+Spring Creek Community School
+51.75
+
+
+
+
+
+
