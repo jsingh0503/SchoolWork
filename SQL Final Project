@@ -1,0 +1,238 @@
+CIS 4400 
+Final Project
+NYC Car Collisions Data Warehouse 
+Jatinder Singh 
+Group #10 
+JATINDER SINGH, MOHAMED ABOUREGILA, LABIBA HAQUE
+
+
+
+
+
+The Business/Organization & Opportunity 
+A. We are a sector within the NYC Commissioner's office which is focused on understanding Civilian Car Crashes and implementing policies which will make the pedestrians and users of NYC streets safer. By creating a Data Warehouse built upon various sources we look to understand which areas of our city incur the most crashes and from there develop a plan to decrease that number by understanding variables such as vehicle types, race, time, and other attributes. 
+Problem 
+B. Currently we find there to be a gap in understanding the causes of why there are over 600 car crashes throughout NYC each day. By understanding how certain times of day, races, locations, vehicle types and other constraints affect this number we look to discover a solution which will decrease the number of crashes by understanding the impact of the prior mentioned variables. The goal of this data warehouse is to be a data source for data analysts and data scientists to be able to create, visualize, and present trends and solutions based on their analysis.
+
+Logical Data Model
+
+
+ 
+
+
+
+Architecture Diagram
+
+
+1. We have chosen these data sources for our project: Collisions Crashes and Collisions Vehicle data from NYC Open Data and VPIC Data regarding VIN number data. 
+2. We imported the data using python scripts run on our laptops to clean the data, merge data sources, and uploaded the merged (transformed) data into our data warehouse. 
+3. We are running our data warehouse on Google’s Cloud SQL service. 
+4. We are using Excel and R Studio to visualize the data in a professional manner so that end users can easily understand the KPIs and other goals of the data..
+Detailed Design 
+i. A discussion of why each technical choice was made, and why specific alternatives were decided against. 
+1. We decided to choose the NYC Open Data for car crashes because it seems to be an accurate and plentiful dataset. To complement the collisions and vehicles dataset we also have data from the VPIC about the VIN number history of various vehicles. We look to convert the data which is in flat files into Google Cloud and create our data warehouse inside of there. We look to hold 
+metadata about the data type of each field, summary data regarding each crash, and the raw data based from each source. We look to visualize portions of the data warehouse by utilizing excel and it’s various presentation features. 
+ii. Ethical issues taken into consideration 
+a. The first risk zone we ensure to cover is Privacy Surveillance and we look to do that by vetting our vendors. We understand that many different groups and organizations may access this data in the near future. Ensuring this data is securely stored, accessed on an on-site basis, and providing authenticated credentials to access is our main priority. 
+b. We also push to prevent Disinformation about our data. We look to create analysis of leading causes of crashes and develop a policy to prevent them. However, in doing so we do not aspire to create racial judgement, discrimination of age, or a bias against a particular location in any of the presentation of data. This data is to be managed, presented, and analyzed in a professional scope.
+
+Main
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Dec  6 18:07:03 2020
+
+@author: moham
+"""
+
+import requests
+import pandas as pd
+import mysql.connector
+#import pymysql
+from sqlalchemy import create_engine;
+import io
+
+### in this file we are going to extract all files using APIs and combine them in one dataframe through outer joins
+pd.set_option('display.max_columns', None)
+
+
+print("***********************************************")
+print("********************** Collision Crashes*************************")
+#Extract collision dataset using Api(we passes the coulmn names parameters in the url select=..) 
+url="https://data.cityofnewyork.us/resource/h9gi-nx95.csv?$select=zip_code,collision_id,crash_date,crash_time,contributing_factor_vehicle_1,contributing_factor_vehicle_2,contributing_factor_vehicle_3,contributing_factor_vehicle_4,contributing_factor_vehicle_5,borough,latitude,longitude"
+r = requests.get(url)
+rContent=r.content
+#add to a python dataFrame
+collisionCrashes = pd.read_csv(io.StringIO(rContent.decode('utf-8')));
+collisionCrashes['crash_date']=pd.to_datetime(collisionCrashes['crash_date'])
+collisionCrashes['year'] = [d.year for d in collisionCrashes['crash_date']]
+collisionCrashes['month'] = [d.month for d in collisionCrashes['crash_date']]
+collisionCrashes['day_number_of_week'] = [d.strftime("%w") for d in collisionCrashes['crash_date']]
+collisionCrashes['timeId']=collisionCrashes['crash_date'].astype(str)+" "+collisionCrashes['crash_time']
+
+
+print("***********************************************")
+print("********************** Collision vehicles*************************")
+#Extract collision vehicles dataset using Api(we passes the coulmn names parameters in the url select=..) 
+
+url="https://data.cityofnewyork.us/resource/bm4k-52h4.csv?$select=collision_id,vehicle_type, vehicle_make,vehicle_model,vehicle_year"
+
+r = requests.get(url)
+rContent=r.content
+pd.set_option('display.max_columns', None)
+vehicle = pd.read_csv(io.StringIO(rContent.decode('utf-8')));
+
+print("***********************************************")
+print("********************** race*************************")
+
+
+url="https://data.cityofnewyork.us/resource/kku6-nxdu.csv?$select=jurisdiction_name,percent_pacific_islander,percent_hispanic_latino,percent_american_indian,percent_asian_non_hispanic,percent_white_non_hispanic,percent_black_non_hispanic,percent_other_ethnicity"
+
+r = requests.get(url)
+rContent=r.content
+pd.set_option('display.max_columns', None)
+race = pd.read_csv(io.StringIO(rContent.decode('utf-8')));
+print(race['jurisdiction_name'].dtypes)
+#race.rename(columns={'jurisdiction_name':'zip_code'})
+race['zip_code']=race['jurisdiction_name'];
+
+
+crashes = pd.merge(collisionCrashes, vehicle, how='outer', on=['collision_id', 'collision_id'])
+#crashes['zip_code'].astype('int64').dtypes
+print(crashes['zip_code'].dtypes)
+#print(crashes.head(10))
+print(race.keys())
+crashesdemographs=pd.merge(crashes, race, how='outer', on=['zip_code'])
+print(crashesdemographs.head(10))
+
+Car Accidents
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Oct 20 01:37:24 2020
+
+@author: mohamed
+"""
+import requests
+import pandas as pd
+import mysql.connector
+#import pymysql
+from sqlalchemy import create_engine;
+import io
+
+
+#1- extract data
+url="https://data.cityofnewyork.us/resource/jb7j-dtam.csv"
+r = requests.get(url)
+rContent=r.content
+pd.set_option('display.max_columns', None)
+deathCausesdf = pd.read_csv(io.StringIO(rContent.decode('utf-8')),nrows=10);
+print(deathCausesdf)
+
+print("**********************Car Collisions*************************")
+
+## insert data into time dimension
+
+url="https://data.cityofnewyork.us/resource/h9gi-nx95.csv?$select=crash_date,crash_time"
+r = requests.get(url)
+rContent=r.content
+pd.set_option('display.max_columns', None)
+timeDf = pd.read_csv(io.StringIO(rContent.decode('utf-8')));
+timeDf['crash_date']=pd.to_datetime(timeDf['crash_date'])
+timeDf['year'] = [d.year for d in timeDf['crash_date']]
+timeDf['month'] = [d.month for d in timeDf['crash_date']]
+timeDf['day_number_of_week'] = [d.strftime("%w") for d in timeDf['crash_date']]
+timeDf['timeId']=timeDf['crash_date'].astype(str)+" "+timeDf['crash_time']
+timeDf=timeDf.drop_duplicates(subset='timeId', keep="first")
+#print(timeDf)
+engine = create_engine("mysql+pymysql://{user}:{pw}@127.0.0.1/{db}".format(user="root", pw="root", db="nycautocollision"))
+timeDf.to_sql('time_dimension', con = engine, if_exists = 'replace', chunksize = 1000);
+
+## insert data into tContributing Factor Dimension
+
+url="https://data.cityofnewyork.us/resource/h9gi-nx95.csv?$select=contributing_factor_vehicle_1,contributing_factor_vehicle_2,contributing_factor_vehicle_3,contributing_factor_vehicle_4,contributing_factor_vehicle_5"
+r = requests.get(url)
+rContent=r.content
+pd.set_option('display.max_columns', None)
+contributingFactorDF = pd.read_csv(io.StringIO(rContent.decode('utf-8')));
+frames=[contributingFactorDF['contributing_factor_vehicle_1'],contributingFactorDF['contributing_factor_vehicle_2'],contributingFactorDF['contributing_factor_vehicle_3'],contributingFactorDF['contributing_factor_vehicle_4'],contributingFactorDF['contributing_factor_vehicle_5']]
+contributingFactorDF=pd.concat(frames, names='contributing_factor', ignore_index=True)
+contributingFactorDF=pd.DataFrame(contributingFactorDF,columns=['contributing_factor'])
+contributingFactorDF=contributingFactorDF.drop_duplicates(subset='contributing_factor')
+contributingFactorDF['contributing_factor_id']=[(i+1000) for i in contributingFactorDF.index]
+#contributingFactorDF=contributingFactorDF.set_index(pd.Index(range(0,37)))
+print(contributingFactorDF)
+
+contributingFactorDF.to_sql('contributing_factor', con = engine, if_exists = 'replace', chunksize = 100, index=False);
+
+
+#vehicle dimension
+
+url="https://data.cityofnewyork.us/resource/bm4k-52h4.csv?$select=vehicle_type, vehicle_make,vehicle_model,vehicle_year"
+r = requests.get(url)
+rContent=r.content
+pd.set_option('display.max_columns', None)
+vehicle = pd.read_csv(io.StringIO(rContent.decode('utf-8')));
+vehicle=vehicle.drop_duplicates();
+vehicle['vehicle_id']=[(i+10000) for i in vehicle.index]
+#vehicle['vehicle_id']=vehicle['vehicle_type'].astype(str)+" "+vehicle['vehicle_make']+vehicle['vehicle_model']+vehicle['vehicle_year'].astype(str)
+
+vehicle.to_sql('vehicle', con = engine, if_exists = 'replace', chunksize = 1000, index=False);
+
+
+
+#place Dimension
+url="https://data.cityofnewyork.us/resource/h9gi-nx95.csv?$select=borough,zip_code,latitude,longitude "
+r = requests.get(url)
+rContent=r.content
+pd.set_option('display.max_columns', None)
+place = pd.read_csv(io.StringIO(rContent.decode('utf-8')));
+place=place.drop_duplicates()
+place['place_id']=[(i+10000) for i in place.index]
+
+#place=place.set_index(pd.Index(range(0,37)))
+print(place)
+
+place.to_sql('place', con = engine, if_exists = 'replace', chunksize = 100, index=False);
+
+
+
+"""
+#we can also filter using the Api's url parameters, and we will reach the same result may be with less memory and time
+url = "https://data.cityofnewyork.us/resource/ic3t-wcy2.csv?$limit=100&$select=job__,%20doc__,%20borough,%20house__,%20street_name,%20job_type,%20job_status,%20job_status_descrp,%20latest_action_date"
+r = requests.get(url)
+rContent=r.content
+df1 = pd.read_csv(io.StringIO(rContent.decode('utf-8')))
+print(df1)
+
+if(df.to_string()==df1.to_string()):
+    print (True);
+    df=df1;    
+    
+#change the format for the date at index 11 to be consistent with the izo date format in the rest of the column
+df.iloc[11,8]="2018-10-05"
+
+#2-Build the db and insert the data
+
+#try df.to_Sql 
+
+
+engine = create_engine("mysql+pymysql://{user}:{pw}@127.0.0.1/{db}".format(user="root", pw="root", db="hw2"))
+df.to_sql('job_application', con = engine, if_exists = 'append', chunksize = 100);
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+Visulatiations
+
+
+
+Conclusion
+My personal experience with this project is quite unique. I would say that I found it interesting to apply the skills I learned in class and from the homeworks and add my unique touches to them. Furthermore, I believe the last portion of displaying the results was the most difficult and was a level of effort our group had not anticipated. I took a major responsibility in understanding our data and the best way it is to be used. I help a business faced perspective in the creation of our schema and ideas. If I were to do it all over again I would choose a completely different dataset, maybe NBA statistics for a game betting company. I believe one of the biggest struggles in this project was making time with my group to work collaboratively on it. On top of each one of us working, dealing with COVID related issues, some of us are in different time zones. Regardless, through all of these difficulties I feel that I learned a tremendous amount through this project from understanding how to select and manipulate data, creating schemas, importing the data, and then displaying it. 
